@@ -35,13 +35,13 @@ sudo apt-get update && sudo apt-get install -y ethereum
 export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
 cd ./services/evo_jdk8 && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
-cd ../jdk8/erc20-rest-service && chmod +x gradlew && ./gradlew build
+# cd ../jdk8/erc20-rest-service && chmod +x gradlew && ./gradlew build
 cd ../genome-nexus && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 cd ../person-controller && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 cd ../problem-controller && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 cd ../rest-study && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 cd ../spring-batch-rest && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
-cd ../spring-boot-sample-app && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+# cd ../spring-boot-sample-app && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 cd ../user-management && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 export JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH

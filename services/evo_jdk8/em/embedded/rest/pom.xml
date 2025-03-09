@@ -19,7 +19,7 @@
         <module>ncs</module>
         <module>scs</module>
         <module>news</module>
-        <module>ocvn</module>
+        <!-- <module>ocvn</module> -->
         <module>languagetool</module>
         <module>restcountries</module>
     </modules>
