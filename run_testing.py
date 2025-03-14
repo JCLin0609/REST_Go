@@ -45,7 +45,7 @@ def run_get_cov(service_name, port, source_code_path):
     
     report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}")
 
-    count = 0
+    count = 1
     previous_coverage = 0
     for i in range(1, NO_INTERVAL_1MIN + 1):
         # Get coverage .exec file
