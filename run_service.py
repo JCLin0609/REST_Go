@@ -3,6 +3,9 @@ import time
 import sys
 import os
 
+JAVA8_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-arm64"
+JAVA11_HOME = "/usr/lib/jvm/java-11-openjdk-arm64"
+
 def run_service(service_path, class_name):
     with open(service_path + "/cp.txt", 'r') as f:
         cp = f.read()
@@ -11,7 +14,7 @@ def run_service(service_path, class_name):
     if name == "cwa-verification" or name == "market" or name == "project-tracking-system":
         subprocess.run(". ./java11.env && cd " + service_path + " && tmux new-session -d -s " + name + " 'sudo sh run.sh'", shell=True)
     else:
-        subprocess.run(". ./java8.env && cd " + service_path + " && tmux new-session -d -s " + name + " 'sudo sh run.sh'", shell=True)
+        subprocess.run("bash ./java8.env && cd " + service_path + " && tmux new-session -d -s " + name + " ' sh run.sh'", shell=True)
 
 
 if __name__ == "__main__":
