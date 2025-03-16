@@ -144,20 +144,6 @@ def kill_process_using_tmux(service_name):
     except subprocess.CalledProcessError as e:
         print(f"Failed to find or kill process using tmux session {service_name}: {e.stderr.decode()}")
 
-def kill_process_restler():
-    command = "ps aux | grep 'restler' | grep -v grep | awk '{print $2}'"
-    print("Killing RESTler process...")
-    try:
-        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        pids = result.stdout.decode().strip().split()
-        if not pids:
-            print("No RESTler process found.")
-            return
-        for pid in pids:
-            os.kill(int(pid), signal.SIGKILL)
-            print(f"RESTler process with PID {pid} has been killed.")
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to find or kill RESTler process: {e.stderr.decode()}")
 
 if __name__ == "__main__":
     print("Make sure to activate the virtual environment and install requirements before running this script.")
@@ -168,6 +154,8 @@ if __name__ == "__main__":
     restler_py = sys.argv[5]            # Absolute path to the restler.py
     restler_compile_dir = sys.argv[6]   # Absolute path to the restler compile directory
 
+    cur_dir = os.path.dirname(__file__)
+    
     restler_command = [
         "python3", restler_py,
         "--restler_grammar", os.path.join(restler_compile_dir, "grammar.py"),
@@ -182,7 +170,8 @@ if __name__ == "__main__":
         "--garbage_collection_interval", "30",
         "--time_budget", "3",
         "--fuzzing_mode", "bfs-cheap",
-        "--max_sequence_length", "100"
+        "--max_sequence_length", "100",
+        "--coverage_exhausted_file_path", os.path.join(cur_dir, "coverage_exhausted.txt"),
     ]
     
     # kill_process_restler()   
@@ -201,9 +190,19 @@ if __name__ == "__main__":
     time.sleep(5)
     
     try: 
+        start_time = time.time()
         run_testing(service_name, restler_command)
     finally:
         cov_thread.join()
+        
+        # Write to file that the coverage has been exhausted
+        with open("coverage_exhausted.txt", "w") as f:
+            f.write("Coverage has been exhausted.\n")
+            # Write the time to file
+            f.write(f"Start time: {start_time}\n")
+            f.write(f"End time: {time.time()}\n")
+        
+        time.sleep(10)
         
         # Kill the related process
         kill_process_using_port(port)
