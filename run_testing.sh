@@ -1,0 +1,5 @@
+# market
+python3 run_testing.py market 6300 blackbox /home/jclin/Desktop/REST_Go/services/jdk11/market /home/jclin/Desktop/restler-fuzzer/restler/restler.py /home/jclin/Desktop/restler_sut_result/REST_GO_market/Compile /home/jclin/Desktop/restler_sut_result/REST_GO_market/market_openapi.json /home/jclin/Desktop/restler-fuzzer/restler/market_dependency_r1_distill_llama70B_only_data_dep_0302_output.json
+
+# features-service
+python3 run_testing.py features-service 6300 blackbox /home/jclin/Desktop/REST_Go/services/evo_jdk8/cs/rest/original/features-service /home/jclin/Desktop/restler-fuzzer/restler/restler.py /home/jclin/Desktop/restler_sut_result/REST_GO_feature-service/Compile_tree /home/jclin/Desktop/restler_sut_result/REST_GO_feature-service/features_openapi.json /home/jclin/Desktop/restler-fuzzer/restler/feature_dependency_r1_distill_llama70B_0307_output.json

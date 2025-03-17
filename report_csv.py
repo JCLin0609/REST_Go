@@ -57,14 +57,12 @@ for subdir in subdirs:
             jacoco_command2 = jacoco_command2 + ' --classfiles ' + target_dir
 
 jacoco_command1 = 'java -jar org.jacoco.cli-0.8.7-nodeps.jar report '
-# coverage_file = 'result/jacoco_6300_6.exec'
-coverage_file = sys.argv[2]
+input_coverage_exec_file = sys.argv[2]
 jacoco_command2 = jacoco_command2 + ' --csv '
-# jacoco_file = "result/report"
 output_csv = sys.argv[3]
 
 # jacoco_command = jacoco_command1 + coverage_file + jacoco_command2 + jacoco_file
-jacoco_command = jacoco_command1 + coverage_file + jacoco_command2 + output_csv
+jacoco_command = jacoco_command1 + input_coverage_exec_file + jacoco_command2 + output_csv
 
 subprocess.run(jacoco_command, shell=True)
 

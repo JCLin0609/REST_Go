@@ -9,6 +9,7 @@ import signal
 JACOCO_AGENT_JAR = "/home/jclin/Desktop/REST_Go/org.jacoco.agent-0.8.7-runtime.jar"
 JACOCO_CLI_JAR = "/home/jclin/Desktop/REST_Go/org.jacoco.cli-0.8.7-nodeps.jar"
 
+report_dir = ""
 should_exit = False
 
 def run_service(service, port, evo="blackbox"):
@@ -37,17 +38,13 @@ def analyze_instruction_covered_sum(csv_file_path):
         print(f"Failed to analyze coverage: {e}")
     return total_instruction_covered, total_instruction_missed
         
-def run_get_cov(service_name, port, source_code_path):
+def run_get_cov(service_name, port, source_code_path, NO_INTERVAL_MIN):
     print("Start getting coverage...")
     TIME_INTERVAL_1MIN = 1
-    NO_INTERVAL_1MIN = 180
-    TERMINATED_COUNT = 10
-    
-    report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}")
-
-    count = 1
+    # TERMINATED_COUNT = 10
+    # count = 1
     previous_coverage = 0
-    for i in range(1, NO_INTERVAL_1MIN + 1):
+    for i in range(1, NO_INTERVAL_MIN + 1):
         # Get coverage .exec file
         command = [
             "java", "-jar", JACOCO_CLI_JAR, "dump",
@@ -101,21 +98,20 @@ def run_get_cov(service_name, port, source_code_path):
             print(f"Total coverage ({i}th): {total_coverage}%")
         
         # Compare coverage
-        if total_coverage == previous_coverage:
-            if count < TERMINATED_COUNT:
-                count += 1
-            else:
-                print("No change in coverage")
-                break
-        else:
-            count = 1
-            previous_coverage = total_coverage
+        # if total_coverage == previous_coverage:
+        #     if count < TERMINATED_COUNT:
+        #         count += 1
+        #     else:
+        #         print("No change in coverage")
+        #         break
+        # else:
+        #     count = 1
+        #     previous_coverage = total_coverage
         
         time.sleep(TIME_INTERVAL_1MIN * 60)
 
 def run_testing(service_name, restler_command):
     print("Running RESTler...")
-    report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}")
     os.makedirs(report_dir, exist_ok=True)
     os.chdir(report_dir)
     with open("restler_output.log", "w") as log_file:
@@ -153,8 +149,15 @@ if __name__ == "__main__":
     source_code_path = sys.argv[4]      # Absolute path to the source code directory
     restler_py = sys.argv[5]            # Absolute path to the restler.py
     restler_compile_dir = sys.argv[6]   # Absolute path to the restler compile directory
-
+    api_spec_path = sys.argv[7]         # Absolute path to the api spec file
+    init_dependencies_path = sys.argv[8]# Absolute path to the init dependencies file
+    
+    report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}_{time.time()}")
     cur_dir = os.path.dirname(__file__)
+    NO_INTERVAL_MIN = 60
+    
+    running_time = f"{NO_INTERVAL_MIN / 60}"
+    fuzzingMode = "tree"
     
     restler_command = [
         "python3", restler_py,
@@ -168,10 +171,17 @@ if __name__ == "__main__":
         "--enable_checkers", "*",
         "--disable_checkers", "namespacerule",
         "--garbage_collection_interval", "30",
-        "--time_budget", "3",
-        "--fuzzing_mode", "bfs-cheap",
+        "--time_budget", running_time,
+        "--fuzzing_mode", fuzzingMode,
         "--max_sequence_length", "100",
-        "--coverage_exhausted_file_path", os.path.join(cur_dir, "coverage_exhausted.txt"),
+        # "--llm_mode", "groq",
+        # "--llm_model", "deepseek-r1-distill-llama-70b",
+        # "--llm_api_key", "<api_key>",
+        "--llm_mode", "openai",
+        "--llm_model", "gpt-4o-mini",
+        "--llm_api_key", "<api_key>",
+        "--api_spec_path", api_spec_path,
+        "--init_dependencies_path", init_dependencies_path,
     ]
     
     # kill_process_restler()   
@@ -184,7 +194,7 @@ if __name__ == "__main__":
     
     time.sleep(15)
     
-    cov_thread = threading.Thread(target=run_get_cov, args=(service_name, port, source_code_path))
+    cov_thread = threading.Thread(target=run_get_cov, args=(service_name, port, source_code_path, NO_INTERVAL_MIN))
     cov_thread.start()
     
     time.sleep(5)
@@ -207,4 +217,3 @@ if __name__ == "__main__":
         # Kill the related process
         kill_process_using_port(port)
         kill_process_using_tmux(service_name)
-        kill_process_restler() 
