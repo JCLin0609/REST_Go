@@ -154,10 +154,11 @@ if __name__ == "__main__":
     
     report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}_{time.time()}")
     cur_dir = os.path.dirname(__file__)
-    NO_INTERVAL_MIN = 60
+    NO_INTERVAL_MIN = 180
     
     running_time = f"{NO_INTERVAL_MIN / 60}"
     fuzzingMode = "tree"
+    max_sequence_length = f"100"
     
     restler_command = [
         "python3", restler_py,
@@ -173,7 +174,7 @@ if __name__ == "__main__":
         "--garbage_collection_interval", "30",
         "--time_budget", running_time,
         "--fuzzing_mode", fuzzingMode,
-        "--max_sequence_length", "100",
+        "--max_sequence_length", max_sequence_length,
         # "--llm_mode", "groq",
         # "--llm_model", "deepseek-r1-distill-llama-70b",
         # "--llm_api_key", "<api_key>",
