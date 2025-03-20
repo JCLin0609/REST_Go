@@ -149,8 +149,9 @@ if __name__ == "__main__":
     source_code_path = sys.argv[4]      # Absolute path to the source code directory
     restler_py = sys.argv[5]            # Absolute path to the restler.py
     restler_compile_dir = sys.argv[6]   # Absolute path to the restler compile directory
-    api_spec_path = sys.argv[7]         # Absolute path to the api spec file
-    init_dependencies_path = sys.argv[8]# Absolute path to the init dependencies file
+    if len(sys.argv) == 9:
+        api_spec_path = sys.argv[7]         # Absolute path to the api spec file
+        init_dependencies_path = sys.argv[8]# Absolute path to the init dependencies file
     
     report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}_{time.time()}")
     cur_dir = os.path.dirname(__file__)
