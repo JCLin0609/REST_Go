@@ -2,7 +2,7 @@ import subprocess
 import time
 import sys
 import os
-
+import signal
 JAVA8_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-arm64"
 JAVA11_HOME = "/usr/lib/jvm/java-11-openjdk-arm64"
 
@@ -16,6 +16,28 @@ def run_service(service_path, class_name):
     else:
         subprocess.run("bash ./java8.env && cd " + service_path + " && tmux new-session -d -s " + name + " ' sh run.sh'", shell=True)
 
+def kill_process_using_port(port):
+    command = f"lsof -t -i:{port}"
+    print(f"Killing process using port {port}...")
+    try:
+        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.stdout == b'':
+            print(f"No process using port {port} found.")
+            return
+        pid = int(result.stdout.decode().strip())
+        os.kill(pid, signal.SIGKILL)
+        print(f"Process using port {port} has been killed.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to find or kill process using port {port}: {e.stderr.decode()}")
+
+def kill_process_using_tmux(service_name):
+    command = f"tmux kill-session -t {service_name}"
+    print(f"Killing process using tmux session {service_name}...")
+    try:
+        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f"Process using tmux session {service_name} has been killed.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to find or kill process using tmux session {service_name}: {e.stderr.decode()}")
 
 if __name__ == "__main__":
     name = sys.argv[1]
@@ -27,6 +49,9 @@ if __name__ == "__main__":
     cov2 = '",address=*,dumponexit=true -Dfile.encoding=UTF-8'
     cov = cov1 + str(cov_port) + cov2
 
+    kill_process_using_port(cov_port)
+    kill_process_using_tmux(name)
+    
     if evo == "whitebox":
         if name == "features-service":
             run_service("./services/evo_jdk8/em/embedded/rest/features-service", "em.embedded.org.javiermf.features.EmbeddedEvoMasterController")
@@ -102,9 +127,11 @@ if __name__ == "__main__":
             time.sleep(30)
             subprocess.run("tmux new -d -s genome-nexus '. java8.env && java " + cov + " -jar ./services/jdk8/genome-nexus/web/target/web-0-unknown-version-SNAPSHOT.war" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
         elif name == "person-controller":
-            subprocess.run("sudo docker run -d -p 27019:27017 --name mongodb mongo:latest", shell=True)
-            time.sleep(30)
-            subprocess.run("tmux new -d -s person-controller '. java8.env && java " + cov + " -jar ./services/jdk8/person-controller/target/java-spring-boot-mongodb-starter-1.0.0.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
+            subprocess.run("sudo docker run -d -p 27019:27017 --name mongodb mongo:latest --replSet rs0", shell=True, check=True)
+            time.sleep(10)
+            initiate_command = "echo 'rs.initiate()' | sudo docker exec -i mongodb mongosh"
+            subprocess.run(initiate_command, shell=True, check=True)
+            run_service("./services/jdk8/person-controller", "org.evo.EMDriver")
         elif name == "problem-controller":
             subprocess.run("sudo docker run -d -p 3307:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=test mysql", shell=True)
             time.sleep(30)
