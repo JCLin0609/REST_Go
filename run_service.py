@@ -127,11 +127,15 @@ if __name__ == "__main__":
             time.sleep(30)
             subprocess.run("tmux new -d -s genome-nexus '. java8.env && java " + cov + " -jar ./services/jdk8/genome-nexus/web/target/web-0-unknown-version-SNAPSHOT.war" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
         elif name == "person-controller":
+            subprocess.run("sudo docker stop mongodb", shell=True, check=True)
+            subprocess.run("sudo docker rm mongodb", shell=True, check=True)
+            time.sleep(5)
             subprocess.run("sudo docker run -d -p 27019:27017 --name mongodb mongo:latest --replSet rs0", shell=True, check=True)
-            time.sleep(10)
+            time.sleep(5)
             initiate_command = "echo 'rs.initiate()' | sudo docker exec -i mongodb mongosh"
             subprocess.run(initiate_command, shell=True, check=True)
-            run_service("./services/jdk8/person-controller", "org.evo.EMDriver")
+            subprocess.run("tmux new -d -s person-controller '. java8.env && java " + cov + " -jar ./services/jdk8/person-controller/target/java-spring-boot-mongodb-starter-1.0.0.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
+            # run_service("./services/jdk8/person-controller", "org.evo.EMDriver")
         elif name == "problem-controller":
             subprocess.run("sudo docker run -d -p 3307:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=test mysql", shell=True)
             time.sleep(30)

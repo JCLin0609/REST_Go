@@ -183,14 +183,9 @@ if __name__ == "__main__":
         "--llm_model", "gpt-4o-mini",
         "--llm_api_key", "<api_key>",
         "--api_spec_path", api_spec_path,
-        "--init_dependencies_path", init_dependencies_path,
+        "--init_dependencies_path", init_dependencies_path
     ]
     
-    # kill_process_restler()   
-    kill_process_using_port(port)
-    kill_process_using_tmux(service_name)
-    
-    time.sleep(5)
     
     run_service(service_name, port, evo)
     
@@ -208,13 +203,13 @@ if __name__ == "__main__":
         cov_thread.join()
         
         # Write to file that the coverage has been exhausted
-        with open("coverage_exhausted.txt", "w") as f:
-            f.write("Coverage has been exhausted.\n")
-            # Write the time to file
-            f.write(f"Start time: {start_time}\n")
-            f.write(f"End time: {time.time()}\n")
+        # with open("coverage_exhausted.txt", "w") as f:
+        #     f.write("Coverage has been exhausted.\n")
+        #     # Write the time to file
+        #     f.write(f"Start time: {start_time}\n")
+        #     f.write(f"End time: {time.time()}\n")
         
-        time.sleep(10)
+        # time.sleep(10)
         
         # Kill the related process
         kill_process_using_port(port)
