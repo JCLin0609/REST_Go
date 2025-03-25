@@ -123,9 +123,11 @@ if __name__ == "__main__":
         elif name == "erc20-rest-service":
             subprocess.run("tmux new -d -s erc20-rest-service '. java8.env && java " + cov + " -jar ./services/jdk8/erc20-rest-service/build/libs/erc20-rest-service-0.1.0.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
         elif name == "genome-nexus":
+            subprocess.run("sudo docker stop gn-mongo", shell=True)
+            subprocess.run("sudo docker rm gn-mongo", shell=True)
             subprocess.run("sudo docker run --name=gn-mongo --restart=always -p 27018:27017 -d genomenexus/gn-mongo:latest", shell=True)
-            time.sleep(30)
-            subprocess.run("tmux new -d -s genome-nexus '. java8.env && java " + cov + " -jar ./services/jdk8/genome-nexus/web/target/web-0-unknown-version-SNAPSHOT.war" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
+            time.sleep(10)
+            subprocess.run("tmux new -d -s genome-nexus 'bash java8.env && java " + cov + " -jar ./services/jdk8/genome-nexus/web/target/web-0-unknown-version-SNAPSHOT.war" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
         elif name == "person-controller":
             subprocess.run("sudo docker stop mongodb", shell=True, check=True)
             subprocess.run("sudo docker rm mongodb", shell=True, check=True)
