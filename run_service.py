@@ -3,8 +3,8 @@ import time
 import sys
 import os
 import signal
-JAVA8_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-arm64"
-JAVA11_HOME = "/usr/lib/jvm/java-11-openjdk-arm64"
+JAVA8_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-amd64"
+JAVA11_HOME = "/usr/lib/jvm/java-11-openjdk-amd64"
 
 def run_service(service_path, class_name):
     with open(service_path + "/cp.txt", 'r') as f:
@@ -18,11 +18,9 @@ def run_service(service_path, class_name):
 
 def kill_process_using_port(port):
     command = f"lsof -t -i:{port}"
-    print(f"Killing process using port {port}...")
     try:
         result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.stdout == b'':
-            print(f"No process using port {port} found.")
             return
         pid = int(result.stdout.decode().strip())
         os.kill(pid, signal.SIGKILL)
@@ -32,7 +30,6 @@ def kill_process_using_port(port):
 
 def kill_process_using_tmux(service_name):
     command = f"tmux kill-session -t {service_name}"
-    print(f"Killing process using tmux session {service_name}...")
     try:
         result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(f"Process using tmux session {service_name} has been killed.")

@@ -1,13 +1,13 @@
 import subprocess
-import sys
 import time
 import threading
 import os
 import csv
 import signal
+import argparse
 
-JACOCO_AGENT_JAR = "/home/jclin/Desktop/REST_Go/org.jacoco.agent-0.8.7-runtime.jar"
-JACOCO_CLI_JAR = "/home/jclin/Desktop/REST_Go/org.jacoco.cli-0.8.7-nodeps.jar"
+JACOCO_AGENT_JAR = "/home/selab/Desktop/REST_Go/org.jacoco.agent-0.8.7-runtime.jar"
+JACOCO_CLI_JAR = "/home/selab/Desktop/REST_Go/org.jacoco.cli-0.8.7-nodeps.jar"
 
 report_dir = ""
 should_exit = False
@@ -142,51 +142,109 @@ def kill_process_using_tmux(service_name):
 
 
 if __name__ == "__main__":
-    print("Make sure to activate the virtual environment and install requirements before running this script.")
-    service_name = sys.argv[1]
-    port = sys.argv[2]
-    evo = sys.argv[3]
-    source_code_path = sys.argv[4]      # Absolute path to the source code directory
-    restler_py = sys.argv[5]            # Absolute path to the restler.py
-    restler_compile_dir = sys.argv[6]   # Absolute path to the restler compile directory
-    if len(sys.argv) >= 8:
-        api_spec_path = sys.argv[7]         # Absolute path to the api spec file
-    if len(sys.argv) >= 9:
-        init_dependencies_path = sys.argv[8]# Absolute path to the init dependencies file
-    
+    print("\nMake sure to activate the virtual environment and install requirements before running this script.\n")
+    parser = argparse.ArgumentParser(description="Run testing script with specified parameters.")
+    parser.add_argument("--testing_type", choices=["baseline", "exp1", "exp2", "exp3", "morest"], help="Type of testing to perform.", required=True)
+    parser.add_argument("--service_name", help="Name of the service to test.", required=True)
+    parser.add_argument("--port", help="Port number for the service.", default="6300")
+    parser.add_argument("--type", help="Evolution type (e.g., blackbox).", default="blackbox")
+    parser.add_argument("--time_budget", help="Time budget for the testing.", default="180")
+    parser.add_argument("--source_code_path", help="Absolute path to the source code directory.", required=True)
+    parser.add_argument("--restler_py", help="Absolute path to the restler.py script.", required=True)
+    parser.add_argument("--restler_compile_dir", help="Absolute path to the restler compile directory.", required=True)
+    parser.add_argument("--init_dependencies_path", help="Absolute path to the init dependencies file.", default=None)
+    parser.add_argument("--api_spec_path", help="Absolute path to the API specification file.", default=None)
+    args = parser.parse_args()
+
+    testing_type = args.testing_type
+    service_name = args.service_name
+    port = args.port
+    evo = args.type
+    source_code_path = args.source_code_path
+    restler_py = args.restler_py
+    restler_compile_dir = args.restler_compile_dir
+    api_spec_path = args.api_spec_path
+    init_dependencies_path = args.init_dependencies_path
+
     report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}_{time.time()}")
     cur_dir = os.path.dirname(__file__)
-    NO_INTERVAL_MIN = 180
     
+    NO_INTERVAL_MIN = int(args.time_budget)
     running_time = f"{NO_INTERVAL_MIN / 60}"
-    fuzzingMode = "tree"
     max_sequence_length = f"100"
+    openai_api_key = "<api_key>"
     
-    restler_command = [
-        "python3", restler_py,
-        "--restler_grammar", os.path.join(restler_compile_dir, "grammar.py"),
-        "--custom_mutations", os.path.join(restler_compile_dir, "dict.json"),
-        "--set_version", "9.2.2",
-        "--no_ssl",
-        "--settings", os.path.join(restler_compile_dir, "engine_settings.json"),
-        "--include_user_agent",
-        "--no_tokens_in_logs", "t",
-        "--enable_checkers", "*",
-        "--disable_checkers", "namespacerule",
-        "--garbage_collection_interval", "30",
-        "--time_budget", running_time,
-        "--fuzzing_mode", fuzzingMode,
-        "--max_sequence_length", max_sequence_length,
-        # "--llm_mode", "groq",
-        # "--llm_model", "deepseek-r1-distill-llama-70b",
-        # "--llm_api_key", "<api_key>",
-        "--llm_mode", "openai",
-        "--llm_model", "gpt-4o-mini",
-        "--llm_api_key", "<api_key>",
-        "--api_spec_path", api_spec_path,
-        "--init_dependencies_path", init_dependencies_path
-    ]
-    
+    if testing_type == "baseline":
+        print("\nRunning baseline test... Make sure restler.py is in baseline branch.\n")
+        fuzzingMode = "bfs-cheap"
+        restler_command = [
+            "python3", restler_py,
+            "--restler_grammar", os.path.join(restler_compile_dir, "grammar.py"),
+            "--custom_mutations", os.path.join(restler_compile_dir, "dict.json"),
+            "--set_version", "9.2.2",
+            "--no_ssl",
+            "--settings", os.path.join(restler_compile_dir, "engine_settings.json"),
+            "--include_user_agent",
+            "--no_tokens_in_logs", "t",
+            "--enable_checkers", "*",
+            "--disable_checkers", "namespacerule",
+            "--garbage_collection_interval", "30",
+            "--time_budget", running_time,
+            "--fuzzing_mode", fuzzingMode,
+            "--max_sequence_length", max_sequence_length
+        ]
+    elif testing_type == "exp1" or testing_type == "exp2":
+        if testing_type == "exp1":
+            print("\nRunning experiment 1 test... Make sure restler.py is in !!!feedback-llm_v6_exp1!!! branch.\n")
+        elif testing_type == "exp2":
+            print("\nRunning experiment 2 test... Make sure restler.py is in current branch.\n")
+        fuzzingMode = "bfs-cheap"
+        restler_command = [
+            "python3", restler_py,
+            "--restler_grammar", os.path.join(restler_compile_dir, "grammar.py"),
+            "--custom_mutations", os.path.join(restler_compile_dir, "dict.json"),
+            "--set_version", "9.2.2",
+            "--no_ssl",
+            "--settings", os.path.join(restler_compile_dir, "engine_settings.json"),
+            "--include_user_agent",
+            "--no_tokens_in_logs", "t",
+            "--enable_checkers", "*",
+            "--disable_checkers", "namespacerule",
+            "--garbage_collection_interval", "30",
+            "--time_budget", running_time,
+            "--fuzzing_mode", fuzzingMode,
+            "--max_sequence_length", max_sequence_length,
+            "--llm_mode", "openai",
+            "--llm_model", "gpt-4o-mini",
+            "--llm_api_key", openai_api_key,
+            "--api_spec_path", api_spec_path
+        ]
+    elif testing_type == "exp3":
+        print("\nRunning experiment 3 test... Make sure restler.py is in tree_dep branch.\n")
+        fuzzingMode = "tree"
+        restler_command = [
+            "python3", restler_py,
+            "--restler_grammar", os.path.join(restler_compile_dir, "grammar.py"),
+            "--custom_mutations", os.path.join(restler_compile_dir, "dict.json"),
+            "--set_version", "9.2.2",
+            "--no_ssl",
+            "--settings", os.path.join(restler_compile_dir, "engine_settings.json"),
+            "--include_user_agent",
+            "--no_tokens_in_logs", "t",
+            "--enable_checkers", "*",
+            "--disable_checkers", "namespacerule",
+            "--garbage_collection_interval", "30",
+            "--time_budget", running_time,
+            "--fuzzing_mode", fuzzingMode,
+            "--max_sequence_length", max_sequence_length,
+            "--llm_mode", "openai",
+            "--llm_model", "gpt-4o-mini",
+            "--llm_api_key", openai_api_key,
+            "--api_spec_path", api_spec_path,
+            "--init_dependencies_path", init_dependencies_path
+        ]
+    elif testing_type == "morest": 
+        pass
     
     run_service(service_name, port, evo)
     
