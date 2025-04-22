@@ -120,20 +120,20 @@ if __name__ == "__main__":
         elif name == "erc20-rest-service":
             subprocess.run("tmux new -d -s erc20-rest-service '. java8.env && java " + cov + " -jar ./services/jdk8/erc20-rest-service/build/libs/erc20-rest-service-0.1.0.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
         elif name == "genome-nexus":
-            if subprocess.run("sudo docker ps -a | grep gn-mongo", shell=True).returncode == 0:
-                subprocess.run("sudo docker stop gn-mongo", shell=True, check=True)
-                subprocess.run("sudo docker rm gn-mongo", shell=True, check=True)
-            subprocess.run("sudo docker run --name=gn-mongo --restart=always -p 27018:27017 -d genomenexus/gn-mongo:latest", shell=True)
+            if subprocess.run("docker ps -a | grep gn-mongo", shell=True).returncode == 0:
+                subprocess.run("docker stop gn-mongo", shell=True, check=True)
+                subprocess.run("docker rm gn-mongo", shell=True, check=True)
+            subprocess.run("docker run --name=gn-mongo --restart=always -p 27018:27017 -d genomenexus/gn-mongo:latest", shell=True)
             time.sleep(60)
             subprocess.run("tmux new -d -s genome-nexus 'bash java8.env && java " + cov + " -jar ./services/jdk8/genome-nexus/web/target/web-0-unknown-version-SNAPSHOT.war" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
             time.sleep(60)
         elif name == "person-controller":
-            subprocess.run("sudo docker stop mongodb", shell=True, check=True)
-            subprocess.run("sudo docker rm mongodb", shell=True, check=True)
+            subprocess.run("docker stop mongodb", shell=True, check=True)
+            subprocess.run("docker rm mongodb", shell=True, check=True)
             time.sleep(5)
-            subprocess.run("sudo docker run -d -p 27019:27017 --name mongodb mongo:latest --replSet rs0", shell=True, check=True)
+            subprocess.run("docker run -d -p 27019:27017 --name mongodb mongo:latest --replSet rs0", shell=True, check=True)
             time.sleep(5)
-            initiate_command = "echo 'rs.initiate()' | sudo docker exec -i mongodb mongosh"
+            initiate_command = "echo 'rs.initiate()' | docker exec -i mongodb mongosh"
             subprocess.run(initiate_command, shell=True, check=True)
             subprocess.run("tmux new -d -s person-controller '. java8.env && java " + cov + " -jar ./services/jdk8/person-controller/target/java-spring-boot-mongodb-starter-1.0.0.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
             # run_service("./services/jdk8/person-controller", "org.evo.EMDriver")
@@ -148,10 +148,10 @@ if __name__ == "__main__":
         elif name == "spring-boot-sample-app":
             run_service("./services/jdk8/spring-boot-sample-app", "com.test.sampleapp.Application")
         elif name == "user-management":
-            if subprocess.run("sudo docker ps -a | grep mysqldb", shell=True).returncode == 0:
-                subprocess.run("sudo docker stop mysqldb", shell=True, check=True)
-                subprocess.run("sudo docker rm mysqldb", shell=True, check=True)
-            subprocess.run("sudo docker run -d -p 3306:3306 --name mysqldb -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=users mysql", shell=True)
+            if subprocess.run("docker ps -a | grep mysqldb", shell=True).returncode == 0:
+                subprocess.run("docker stop mysqldb", shell=True, check=True)
+                subprocess.run("docker rm mysqldb", shell=True, check=True)
+            subprocess.run("docker run -d -p 3306:3306 --name mysqldb -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=users mysql", shell=True)
             time.sleep(30)
             subprocess.run("tmux new -d -s user-management '. java8.env && java " + cov + " -jar ./services/jdk8/user-management/target/microdemo2-1.0.0-SNAPSHOT.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
         elif name == "cwa-verification":

@@ -214,8 +214,8 @@ if __name__ == "__main__":
             "--time_budget", running_time,
             "--fuzzing_mode", fuzzingMode,
             "--max_sequence_length", max_sequence_length,
-            "--llm_mode", "openai",
-            "--llm_model", "gpt-4o-mini",
+            "--llm_mode", "genai",
+            "--llm_model", "gemini-2.0-flash",
             "--llm_api_key", openai_api_key,
             "--api_spec_path", api_spec_path
         ]
@@ -237,8 +237,8 @@ if __name__ == "__main__":
             "--time_budget", running_time,
             "--fuzzing_mode", fuzzingMode,
             "--max_sequence_length", max_sequence_length,
-            "--llm_mode", "openai",
-            "--llm_model", "gpt-4o-mini",
+            "--llm_mode", "genai",
+            "--llm_model", "gemini-2.0-flash",
             "--llm_api_key", openai_api_key,
             "--api_spec_path", api_spec_path,
             "--init_dependencies_path", init_dependencies_path
