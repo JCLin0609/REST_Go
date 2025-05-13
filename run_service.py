@@ -159,4 +159,5 @@ if __name__ == "__main__":
         elif name == "market":
             subprocess.run("tmux new -d -s market '. java11.env && java -Djdk.attach.allowAttachSelf=true " + cov + " -jar ./services/jdk11/market/market-rest/target/market-rest-0.1.2.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
         elif name == "project-tracking-system":
-            subprocess.run("tmux new -d -s project-tracking-system '. java11.env && java -Djdk.attach.allowAttachSelf=true " + cov + " -jar ./services/jdk11/project-tracking-system/target/project-tracking-system.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
+            subprocess.run("tmux new -d -s project-tracking-system 'bash ./java11.env && java -Djdk.attach.allowAttachSelf=true " + cov + " -jar ./services/jdk11/project-tracking-system/target/project-tracking-system.jar" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
+            time.sleep(60)
