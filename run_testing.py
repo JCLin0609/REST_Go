@@ -117,6 +117,14 @@ def run_testing(service_name, restler_command):
     with open("restler_output.log", "w") as log_file:
         subprocess.Popen(restler_command, stdout=log_file, stderr=subprocess.STDOUT)
 
+def run_morest(morest_command):
+    print("Running MoREST...")
+    os.makedirs(report_dir, exist_ok=True)
+    os.chdir("/home/selab/Desktop/other/morest")
+    with open(f"{report_dir}/morest_output.log", "w") as log_file:
+        subprocess.Popen(morest_command, stdout=log_file, stderr=subprocess.STDOUT)
+    pass
+
 def kill_process_using_port(port):
     command = f"lsof -t -i:{port}"
     print(f"Killing process using port {port}...")
@@ -144,16 +152,17 @@ def kill_process_using_tmux(service_name):
 if __name__ == "__main__":
     print("\nMake sure to activate the virtual environment and install requirements before running this script.\n")
     parser = argparse.ArgumentParser(description="Run testing script with specified parameters.")
-    parser.add_argument("--testing_type", choices=["baseline", "exp1", "exp2", "exp3", "morest"], help="Type of testing to perform.", required=True)
+    parser.add_argument("--testing_type", choices=["baseline", "exp1", "exp2", "exp3", "morest", "autoresttest"], help="Type of testing to perform.", required=True)
     parser.add_argument("--service_name", help="Name of the service to test.", required=True)
     parser.add_argument("--port", help="Port number for the service.", default="6300")
     parser.add_argument("--type", help="Evolution type (e.g., blackbox).", default="blackbox")
     parser.add_argument("--time_budget", help="Time budget for the testing.", default="180")
     parser.add_argument("--source_code_path", help="Absolute path to the source code directory.", required=True)
     parser.add_argument("--restler_py", help="Absolute path to the restler.py script.", required=True)
-    parser.add_argument("--restler_compile_dir", help="Absolute path to the restler compile directory.", required=True)
+    parser.add_argument("--restler_compile_dir", help="Absolute path to the restler compile directory.")
     parser.add_argument("--init_dependencies_path", help="Absolute path to the init dependencies file.", default=None)
     parser.add_argument("--api_spec_path", help="Absolute path to the API specification file.", default=None)
+    parser.add_argument("--url", help="URL for the service.", default="https://restcountries.com")
     args = parser.parse_args()
 
     testing_type = args.testing_type
@@ -165,6 +174,7 @@ if __name__ == "__main__":
     restler_compile_dir = args.restler_compile_dir
     api_spec_path = args.api_spec_path
     init_dependencies_path = args.init_dependencies_path
+    url = args.url
 
     report_dir = os.path.join(os.path.dirname(__file__), f"report_{service_name}_{time.time()}")
     cur_dir = os.path.dirname(__file__)
@@ -172,7 +182,7 @@ if __name__ == "__main__":
     NO_INTERVAL_MIN = int(args.time_budget)
     running_time = f"{NO_INTERVAL_MIN / 60}"
     max_sequence_length = f"100"
-    openai_api_key = "<api_key>"
+    openai_api_key = "AIzaSyC39IULl23NG3H1mq8lGSx3_jb-pfgPmMk"
     
     if testing_type == "baseline":
         print("\nRunning baseline test... Make sure restler.py is in baseline branch.\n")
@@ -244,8 +254,18 @@ if __name__ == "__main__":
             "--init_dependencies_path", init_dependencies_path
         ]
     elif testing_type == "morest": 
-        pass
-    
+        morest_command = [
+            "python3", restler_py,
+            "--yaml_path", api_spec_path,
+            "--time_budget", f"{NO_INTERVAL_MIN * 60}",
+            "--url", url,
+            "--output_dir", f"report_{service_name}",
+        ]
+    elif testing_type == "autoresttest":
+        autoresttest_command = [
+            "python3", restler_py
+        ]
+            
     run_service(service_name, port, evo)
     
     time.sleep(15)
@@ -257,7 +277,13 @@ if __name__ == "__main__":
     
     try: 
         start_time = time.time()
-        run_testing(service_name, restler_command)
+        if testing_type == "morest":
+            # run_morest(morest_command)
+            pass
+        if testing_type == "autoresttest":
+            pass
+        else:
+            run_testing(service_name, restler_command)
     finally:
         cov_thread.join()
         
