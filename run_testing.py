@@ -110,6 +110,77 @@ def run_get_cov(service_name, port, source_code_path, NO_INTERVAL_MIN):
         
         time.sleep(TIME_INTERVAL_1MIN * 60)
 
+def get_gen_cov(service_name, port, source_code_path, NO_INTERVAL_MIN, start_time):
+    gen_record_dir = "/home/selab/Desktop/REST_Go"
+    gen_record_file = os.path.join(gen_record_dir, "gen_record.txt")
+
+    if os.path.exists(gen_record_file):
+        try:
+            os.remove(gen_record_file)
+        except Exception as e:
+            print(f"Failed to remove gen_record.txt: {e}")
+
+    generation_count = 1
+    while True:
+        if os.path.exists(gen_record_file):
+            try:
+                with open(gen_record_file, "r") as f:
+                    gen_record_contents = f.read()
+            except Exception as e:
+                print(f"Failed to read gen_record.txt: {e}")
+
+            # Get coverage .exec file
+            command = [
+                "java", "-jar", JACOCO_CLI_JAR, "dump",
+                "--address", "localhost", "--port", port,
+                "--destfile", f"{report_dir}/generation_{generation_count}.exec"
+            ]
+
+            try:
+                result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(result.stdout.decode())
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to execute Jacoco dump command: {e.stderr.decode()}")
+
+            # Get coverage .csv file
+            subdirs = [x[0] for x in os.walk(source_code_path)]
+            class_files = []
+            jacoco_command2 = ''
+            
+            for subdir in subdirs:
+                if source_code_path in subdir and '/target/classes/' in subdir:
+                    target_dir = subdir[:subdir.rfind('/target/classes/') + 15]
+                    if target_dir not in class_files:
+                        class_files.append(target_dir)
+                        jacoco_command2 = jacoco_command2 + ' --classfiles ' + target_dir
+                if source_code_path in subdir and '/build/classes/' in subdir:
+                    target_dir = subdir[:subdir.rfind('/build/classes/') + 14]
+                    if target_dir not in class_files:
+                        class_files.append(target_dir)
+                        jacoco_command2 = jacoco_command2 + ' --classfiles ' + target_dir
+            
+            jacoco_command1 = f'java -jar {JACOCO_CLI_JAR} report '
+            coverage_file = f"{report_dir}/generation_{generation_count}.exec"
+            jacoco_command2 = jacoco_command2 + ' --csv '
+            output_csv = f"{report_dir}/generation_{generation_count}.csv"
+            jacoco_command = jacoco_command1 + coverage_file + jacoco_command2 + output_csv
+            try:
+                subprocess.run(jacoco_command, shell=True)
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to execute Jacoco report command: {e.stderr.decode()}")
+                break
+
+            try:
+                os.remove(gen_record_file)
+            except Exception as e:
+                print(f"Failed to remove gen_record.txt: {e}")
+
+            generation_count += 1
+        else:
+            time.sleep(3)
+        if time.time() - start_time > NO_INTERVAL_MIN * 60:
+            return
+
 def run_testing(service_name, restler_command):
     print("Running RESTler...")
     os.makedirs(report_dir, exist_ok=True)
@@ -270,6 +341,10 @@ if __name__ == "__main__":
     
     time.sleep(15)
     
+    cur_time = time.time()
+    cov_gen_collect_thread = threading.Thread(target=get_gen_cov, args=(service_name, port, source_code_path, NO_INTERVAL_MIN, cur_time))
+    cov_gen_collect_thread.start()
+
     cov_thread = threading.Thread(target=run_get_cov, args=(service_name, port, source_code_path, NO_INTERVAL_MIN))
     cov_thread.start()
     
@@ -286,6 +361,7 @@ if __name__ == "__main__":
             run_testing(service_name, restler_command)
     finally:
         cov_thread.join()
+        cov_gen_collect_thread.join()
         
         # Write to file that the coverage has been exhausted
         # with open("coverage_exhausted.txt", "w") as f:

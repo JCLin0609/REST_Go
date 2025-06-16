@@ -128,9 +128,10 @@ if __name__ == "__main__":
             subprocess.run("tmux new -d -s genome-nexus 'bash java8.env && java " + cov + " -jar ./services/jdk8/genome-nexus/web/target/web-0-unknown-version-SNAPSHOT.war" + " > " + base + "/log_" + cov_port + ".txt'", shell=True)
             time.sleep(60)
         elif name == "person-controller":
-            subprocess.run("docker stop mongodb", shell=True, check=True)
-            subprocess.run("docker rm mongodb", shell=True, check=True)
-            time.sleep(5)
+            if subprocess.run("docker ps -a | grep mongodb", shell=True).returncode == 0:
+                subprocess.run("docker stop mongodb", shell=True, check=True)
+                subprocess.run("docker rm mongodb", shell=True, check=True)
+                time.sleep(5)
             subprocess.run("docker run -d -p 27019:27017 --name mongodb mongo:latest --replSet rs0", shell=True, check=True)
             time.sleep(5)
             initiate_command = "echo 'rs.initiate()' | docker exec -i mongodb mongosh"
