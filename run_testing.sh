@@ -35,7 +35,7 @@ python3 run_testing.py --testing_type autoresttest --service_name features-servi
 # features-service exp1
 python3 run_testing.py --testing_type exp1 --service_name features-service --port 6300 --type blackbox --time_budget 180 --source_code_path /home/selab/Desktop/REST_Go/services/evo_jdk8/cs/rest/original/features-service --restler_py /home/selab/Desktop/restler-fuzzer_exp1/restler/restler.py --restler_compile_dir /home/selab/Desktop/restler_sut_result/ARAT_RL_features/Compile_baseline --api_spec_path /home/selab/Desktop/restler_sut_result/ARAT_RL_features/features.json
 
-# features-service exp2
+# features-service exp2 aratrl
 python3 run_testing.py --testing_type exp2 --service_name features-service --port 6300 --type blackbox --time_budget 180 --source_code_path /home/selab/Desktop/REST_Go/services/evo_jdk8/cs/rest/original/features-service --restler_py /home/selab/Desktop/restler-fuzzer/restler/restler.py --restler_compile_dir /home/selab/Desktop/restler_sut_result/ARAT_RL_features/Compile_baseline --api_spec_path /home/selab/Desktop/restler_sut_result/ARAT_RL_features/features.json
 
 # features-service aratrl exp2-1
@@ -151,7 +151,7 @@ python3 run_testing.py --testing_type autoresttest --service_name project-tracki
 # project-tracking exp1
 python3 run_testing.py --testing_type exp1 --service_name project-tracking-system --port 6300 --type blackbox --time_budget 180 --source_code_path /home/selab/Desktop/REST_Go/services/jdk11/project-tracking-system --restler_py /home/selab/Desktop/restler-fuzzer_exp1/restler/restler.py --restler_compile_dir /home/selab/Desktop/restler_sut_result/ARAT_RL_project/Compile/ --api_spec_path /home/selab/Desktop/restler_sut_result/ARAT_RL_project/project.json
 
-# project-tracking exp2
+# project-tracking exp2 aratrl
 python3 run_testing.py --testing_type exp2 --service_name project-tracking-system --port 6300 --type blackbox --time_budget 180 --source_code_path /home/selab/Desktop/REST_Go/services/jdk11/project-tracking-system --restler_py /home/selab/Desktop/restler-fuzzer/restler/restler.py --restler_compile_dir /home/selab/Desktop/restler_sut_result/ARAT_RL_project/Compile/ --api_spec_path /home/selab/Desktop/restler_sut_result/ARAT_RL_project/project.json
 
 # project-tracking exp2-1 aratrl
@@ -229,5 +229,5 @@ python3 run_testing.py --testing_type exp2 --service_name news --port 6300 --typ
 # news exp2-1
 python3 run_testing.py --testing_type exp2 --service_name news --port 6300 --type blackbox --time_budget 180 --source_code_path /home/selab/Desktop/REST_Go/services/evo_jdk8/cs/rest/artificial/news --restler_py /home/selab/Desktop/restler-fuzzer/restler/restler.py --restler_compile_dir /home/selab/Desktop/restler_sut_result/REST_GO_news/Compile_tree/ --api_spec_path /home/selab/Desktop/restler_sut_result/REST_GO_news/news_openapi.json
 
-# news exp3
+# news tree
 python3 run_testing.py --testing_type exp3 --service_name news --port 6300 --type blackbox --time_budget 180 --source_code_path /home/selab/Desktop/REST_Go/services/evo_jdk8/cs/rest/artificial/news --restler_py /home/selab/Desktop/restler-fuzzer/restler/restler.py --restler_compile_dir /home/selab/Desktop/restler_sut_result/REST_GO_news/Compile_tree/ --api_spec_path /home/selab/Desktop/restler_sut_result/REST_GO_news/news_openapi.json --init_dependencies_path /home/selab/Desktop/restler-fuzzer/sut_relation_description_new/news_gemini_0528_output.json
